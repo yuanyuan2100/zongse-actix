@@ -5,7 +5,7 @@
 <head>
  <title>zongse.de</title>
 
-  {% include "head" %}
+  {# {% include "head" %} #}
 
 </head>
 
@@ -14,7 +14,7 @@
 
   <!-- Navigation -->
 
-    {% include "navigation" %}
+    {# {% include "navigation" %} #}
 
   <!-- Page Header -->
   <header class="masthead" style="background-image: url('img/home-bg2.jpg')">
@@ -32,7 +32,7 @@
   </header>
 
   <!-- Main Content -->
-
+{# 
    {% block content %}
   <div class="container">
     <div class="row">
@@ -50,7 +50,7 @@
           <p class="post-meta text-right"><a href="{{ post.id_url }}" type="date">{{ post.create_time | date(format="%e %b %Y")}}</a></p>
         </div>
         <hr>
-        {% endfor %}
+        {% endfor %} #}
         
         <!-- Pager -->
         {# <div class="clearfix">
@@ -61,11 +61,11 @@
   </div>
 
   <hr>
-  {% endblock content %}
+  {# {% endblock content %}
   
   <!-- Footer -->
     
-  {% include "footer" %}
+  {% include "footer" %} #}
  
 
 </body>
