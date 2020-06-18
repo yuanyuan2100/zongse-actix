@@ -11,6 +11,8 @@ pub fn create_db_pool() -> Pool<ConnectionManager<PgConnection>> {
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let manager = ConnectionManager::<PgConnection>::new(database_url);
+
+    println!("Database Pool Created.");
     Pool::new(manager).expect("Failed to create pool.")
 }
 
@@ -19,6 +21,8 @@ lazy_static! {
 }
 
 pub struct DB(PooledConnection<ConnectionManager<PgConnection>>);
+
+pub type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 impl DB {
     pub fn conn(&self) -> &PgConnection {
