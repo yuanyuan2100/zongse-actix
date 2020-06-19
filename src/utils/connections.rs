@@ -1,8 +1,10 @@
 use diesel::pg::PgConnection;
 use r2d2::{Pool, PooledConnection};
 use r2d2_diesel::ConnectionManager;
-
+use actix_web::{dev, Error, HttpRequest, FromRequest, Result};
+use actix_web::error::ErrorBadRequest;
 use dotenv::dotenv;
+use futures::future::{ok, err, Ready};
 
 use std::{env, ops::Deref};
 
@@ -11,8 +13,6 @@ pub fn create_db_pool() -> Pool<ConnectionManager<PgConnection>> {
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let manager = ConnectionManager::<PgConnection>::new(database_url);
-
-    println!("Database Pool Created.");
     Pool::new(manager).expect("Failed to create pool.")
 }
 
@@ -22,23 +22,24 @@ lazy_static! {
 
 pub struct DB(PooledConnection<ConnectionManager<PgConnection>>);
 
-pub type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
-
 impl DB {
     pub fn conn(&self) -> &PgConnection {
         &*self.0
     }
 }
 
-// impl<'a, 'r> FromRequest<'a, 'r> for DB {
-//     type Error = ();
-//     fn from_request(_: &'a Request<'r>) -> Outcome<Self, Self::Error> {
-//         match DB_POOL.get() {
-//             Ok(conn) => Success(DB(conn)),
-//             Err(_e) => Failure((Status::InternalServerError, ())),
-//         }
-//     }
-// }
+impl FromRequest for DB {
+    type Error = Error;
+    type Future = Ready<Result<Self, Self::Error>>;
+    type Config = ();
+
+    fn from_request(_req: &HttpRequest, _payload: &mut dev::Payload) -> Self::Future {
+        match DB_POOL.get() {
+            Ok(conn) => ok(DB(conn)),
+            Err(_e) => err(ErrorBadRequest("no luck")),
+        }
+    }
+}
 
 impl Deref for DB {
     type Target = PgConnection;

@@ -3,10 +3,28 @@
 
   <!-- Main Content --> 
    {% block content %}
-  <div class="container">
+   <div class="container">
     <div class="row">
       <div class="col-lg-8 col-md-10 mx-auto">
-{{posts}}
+        {% for post in posts %}
+        <div class="post-preview">
+          <a href="post/{{ post.id_url }}">
+            <h2 class="post-title">
+              {{ post.title }}
+            </h2>
+            <h3 class="post-subtitle">
+              {{ post.subtitle }}
+            </h3>
+          </a>
+          <p class="post-meta text-right"><a href="{{ post.id_url }}" type="date">{{ post.create_time | date(format="%e %b %Y")}}</a></p>
+        </div>
+        <hr>
+        {% endfor %}
+        
+        <!-- Pager -->
+        {# <div class="clearfix">
+          <a class="btn btn-primary float-right" href="/">Older Posts &rarr;</a>
+        </div> #}
       </div>
     </div>
   </div>
