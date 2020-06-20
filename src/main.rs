@@ -26,7 +26,7 @@ pub mod model;
 pub mod schema;
 
 #[get("/")]
-async fn index(tmpl: web::Data<tera::Tera>, conn: DB) -> HttpResponse {
+async fn index(tmpl: web::Data<tera::Tera>, db: DB) -> HttpResponse {
     use crate::schema::posts::dsl::*;
 
     let mut context = Context::new();
@@ -35,7 +35,7 @@ async fn index(tmpl: web::Data<tera::Tera>, conn: DB) -> HttpResponse {
                     .filter(published.eq(true))
                     .limit(5)
                     .order(id.desc())
-                    .load::<Post>(&*conn)
+                    .load::<Post>(&*db)
                     .expect("Error loading posts");
     
     context.insert("posts", &results);
@@ -45,16 +45,16 @@ async fn index(tmpl: web::Data<tera::Tera>, conn: DB) -> HttpResponse {
    HttpResponse::Ok().content_type("text/html").body(s)
 }
 
-pub fn posts_and_comments(post_url: &str, conn: &DB) -> Context {
+pub fn posts_and_comments(post_url: &str, db: &DB) -> Context {
 
     let mut context = Context::new();
 
-    let post = Post::find_by_url(&post_url, &*conn).unwrap();
+    let post = Post::find_by_url(&post_url, &*db).unwrap();
     let post_text = url_converter(&post.body);
 
-    let _view = post.view_counter(&*conn);
+    let _view = post.view_counter(&*db);
 
-    let comments = Comment::load_by_post_id(&post.id, &*conn);
+    let comments = Comment::load_by_post_id(&post.id, &*db);
 
     context.insert("post", &post);
     context.insert("post_text", &post_text);
@@ -64,13 +64,11 @@ pub fn posts_and_comments(post_url: &str, conn: &DB) -> Context {
 }
 
 #[get("post/{post_url}")]
-async fn load_post(tmpl: web::Data<tera::Tera>, post_url: web::Path<String>, conn: DB) -> HttpResponse {
+async fn load_post(tmpl: web::Data<tera::Tera>, post_url: web::Path<String>, db: DB) -> HttpResponse {
 
     let mut context = Context::new();
 
-    println!("{}", &post_url);
-
-    context.extend(posts_and_comments(&post_url, &conn));
+    context.extend(posts_and_comments(&post_url, &db));
     context.insert("display_signin", &"block");   
     context.insert("display_comment", &"block");
     context.insert("display_delete_post", &"block");

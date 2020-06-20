@@ -1,6 +1,6 @@
 use serde_derive::{Serialize, Deserialize};
 use chrono::NaiveDateTime;
-use diesel::{prelude::*, pg::PgConnection, result::Error, Insertable, Queryable};
+use diesel::{prelude::*, result::Error, Insertable, Queryable};
 
 use crate::schema::*;
 use crate::schema::posts::columns::view;
@@ -21,24 +21,24 @@ pub struct Post {
 }
 
 impl Post {
-    pub fn find_by_url(url: &str, conn: &DB) -> Result<Self, Error> {
+    pub fn find_by_url(url: &str, db: &DB) -> Result<Self, Error> {
         posts::table
             .filter(posts::published.eq(true))
             .filter(posts::id_url.eq(url.to_string()))
-            .first::<Post>(&*conn.conn())
+            .first::<Post>(&*db.conn())
     }
 
-    pub fn find_unpublished_by_url(url: &str, conn: DB) -> Result<Self, Error> {
+    pub fn find_unpublished_by_url(url: &str, db: &DB) -> Result<Self, Error> {
         posts::table
             .filter(posts::published.eq(false))
             .filter(posts::id_url.eq(url.to_string()))
-            .first::<Post>(conn.conn())
+            .first::<Post>(&*db.conn())
     }
 
-    pub fn view_counter(&self, conn: &PgConnection) {
+    pub fn view_counter(&self, db: &DB) {
         let _view = diesel::update(self)
                 .set(view.eq(&self.view + 1))
-                .get_result::<Post>(&*conn)
+                .get_result::<Post>(&*db.conn())
                 .expect("View counter error.");
     }
 }
