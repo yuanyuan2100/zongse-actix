@@ -1,8 +1,23 @@
 {% extends "base.html" %}
 
-
   <!-- Main Content --> 
    {% block content %}
+
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url('img/home-bg2.jpg')">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="site-heading">
+            <h1>zongse.de</h1>
+            <span class="subheading">a blog</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+  
    <div class="container">
     <div class="row">
       <div class="col-lg-8 col-md-10 mx-auto">
@@ -16,18 +31,12 @@
               {{ post.subtitle }}
             </h3>
           </a>
-          <p class="post-meta text-right"><a href="{{ post.id_url }}" type="date">{{ post.create_time | date(format="%e %b %Y")}}</a></p>
+          <p class="post-meta text-right"><a href="post/{{ post.id_url }}" type="date">{{ post.create_time | date(format="%e %b %Y")}}</a></p>
         </div>
         <hr>
         {% endfor %}
-        
-        <!-- Pager -->
-        {# <div class="clearfix">
-          <a class="btn btn-primary float-right" href="/">Older Posts &rarr;</a>
-        </div> #}
       </div>
     </div>
   </div>
-
   <hr>
 {% endblock content %}

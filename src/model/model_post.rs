@@ -4,6 +4,7 @@ use diesel::{prelude::*, pg::PgConnection, result::Error, Insertable, Queryable}
 
 use crate::schema::*;
 use crate::schema::posts::columns::view;
+use crate::utils::connections::*;
 
 #[derive(Queryable, Identifiable, Debug, Serialize, Deserialize, Insertable, AsChangeset, Clone)]
 #[table_name="posts"]
@@ -20,18 +21,18 @@ pub struct Post {
 }
 
 impl Post {
-    pub fn find_by_url(url: &str, conn: &PgConnection) -> Result<Self, Error> {
+    pub fn find_by_url(url: &str, conn: &DB) -> Result<Self, Error> {
         posts::table
             .filter(posts::published.eq(true))
             .filter(posts::id_url.eq(url.to_string()))
-            .first::<Post>(&*conn)
+            .first::<Post>(&*conn.conn())
     }
 
-    pub fn find_unpublished_by_url(url: &str, conn: &PgConnection) -> Result<Self, Error> {
+    pub fn find_unpublished_by_url(url: &str, conn: DB) -> Result<Self, Error> {
         posts::table
             .filter(posts::published.eq(false))
             .filter(posts::id_url.eq(url.to_string()))
-            .first::<Post>(&*conn)
+            .first::<Post>(conn.conn())
     }
 
     pub fn view_counter(&self, conn: &PgConnection) {
