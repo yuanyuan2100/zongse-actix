@@ -25,20 +25,20 @@ impl Post {
         posts::table
             .filter(posts::published.eq(true))
             .filter(posts::id_url.eq(url.to_string()))
-            .first::<Post>(&*db.conn())
+            .first::<Post>(&**db)
     }
 
     pub fn find_unpublished_by_url(url: &str, db: &DB) -> Result<Self, Error> {
         posts::table
             .filter(posts::published.eq(false))
             .filter(posts::id_url.eq(url.to_string()))
-            .first::<Post>(&*db.conn())
+            .first::<Post>(db.conn())
     }
 
     pub fn view_counter(&self, db: &DB) {
         let _view = diesel::update(self)
                 .set(view.eq(&self.view + 1))
-                .get_result::<Post>(&*db.conn())
+                .get_result::<Post>(&**db)
                 .expect("View counter error.");
     }
 }
