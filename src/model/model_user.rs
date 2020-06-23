@@ -1,9 +1,10 @@
 use chrono::NaiveDateTime;
 use crypto::{digest::Digest, sha3::Sha3};
-use diesel::{prelude::*, result::Error, AsChangeset, Insertable, Queryable, pg::PgConnection};
+use diesel::{prelude::*, result::Error, AsChangeset, Insertable, Queryable};
 use serde_derive::Serialize;
 
 use crate::schema::*;
+use crate::utils::connections::*;
 
 #[derive(Queryable, Debug, Serialize, Insertable, AsChangeset, Clone)]
 #[table_name = "users"]
@@ -30,16 +31,16 @@ impl User {
         hasher.result_str()
     }
 
-    pub fn find_by_username(username: &str, conn: &PgConnection) -> Result<Self, Error> {
+    pub fn find_by_username(username: &str, db: &DB) -> Result<Self, Error> {
         users::table
             .filter(users::username.eq(username.to_string()))
-            .first::<User>(conn)
+            .first::<User>(&**db)
     }
 
-    pub fn find_by_user_id(id: i32, conn: &PgConnection) -> Result<Self, Error> {
+    pub fn find_by_user_id(id: i32, db: &DB) -> Result<Self, Error> {
         users::table
             .filter(users::id.eq(id))
-            .first::<User>(conn)
+            .first::<User>(&**db)
     }
 }
 

@@ -13,15 +13,16 @@ use tera::{Tera, Context};
 
 use std::env;
 
+use crate::admin::admin_login::*;
 use crate::utils::{connections::*, 
     email::notification, 
     url_converter::url_converter,
     time::*};
-    use crate::model::{model_post::*, model_comment::*};
+use crate::model::{model_post::*, model_comment::*};
 
 // pub mod router;
 pub mod utils;
-// pub mod admin;
+pub mod admin;
 pub mod model;
 pub mod schema;
 
@@ -92,6 +93,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .service(index)
             .service(load_post)
+            .service(get_admin_login_page)
+            .service(admin_login)
             .service(Files::new("/", "statics/"))
     })
     .bind("127.0.0.1:8000")?
