@@ -12,7 +12,10 @@ actix-web = { version = "2.0", default-features = false, features = ["secure-coo
 actix-files = "0.2.2"
 actix-rt = "1.1.1"
 actix-http = "1.0.1"
+actix-session = "0.3.0"
+actix-identity = "0.2.1"
 
+rand = "0.7.3"
 r2d2 = "0.8.8"
 r2d2-diesel = "1.0.0"
 dotenv = "0.15.0"

@@ -5,19 +5,19 @@
 
 use actix_files::Files;
 use actix_web::{middleware, App, HttpServer};
-
 use actix_web::{get, web, HttpResponse};
+use actix_http::cookie::SameSite;
+use actix_identity::{CookieIdentityPolicy, IdentityService};
 
 use diesel::prelude::*;
 use tera::{Tera, Context};
+use rand::Rng;
+use chrono::Duration;
 
 use std::env;
 
 use crate::admin::admin_login::*;
-use crate::utils::{connections::*, 
-    email::notification, 
-    url_converter::url_converter,
-    time::*};
+use crate::utils::{connections::*, url_converter::url_converter};
 use crate::model::{model_post::*, model_comment::*};
 
 // pub mod router;
@@ -85,11 +85,20 @@ async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "actix_web=info");
     env_logger::init();
 
-    HttpServer::new(|| {
+    let private_key = rand::thread_rng().gen::<[u8; 32]>();
+
+    HttpServer::new(move || {
         let tera = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*")).unwrap();
             
         App::new()
             .data(tera)
+            .wrap(IdentityService::new(
+                CookieIdentityPolicy::new(&private_key)
+                    .name("auth")
+                    .max_age_time(Duration::days(7))
+                    .same_site(SameSite::Strict)
+                    .secure(false),
+            ))
             .wrap(middleware::Logger::default())
             .service(index)
             .service(load_post)
