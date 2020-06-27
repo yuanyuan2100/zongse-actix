@@ -37,7 +37,7 @@ pub async fn admin_login(
 
                 id.remember(user_id.to_owned().to_string());
 
-                HttpResponse::Found().header(http::header::LOCATION, "/")
+                HttpResponse::Found().header(http::header::LOCATION, "admin_panel")
                                     .finish()
                 
             } else {
@@ -46,5 +46,20 @@ pub async fn admin_login(
             }
         }
         Err(_) => Err(HttpResponse::Found().header(http::header::LOCATION, "admin/admin_login").finish()).unwrap()
+    }
+}
+
+#[get("admin/admin_panel")]
+pub async fn get_admin_panel_page(tmpl: web::Data<tera::Tera>, id: Identity) -> HttpResponse {
+
+    match id.identity() {
+        Some(_) => {
+            let s = tmpl.render("admin/admin_panel.html", &Context::new()).unwrap();
+    
+            HttpResponse::Ok().content_type("text/html").body(s)
+        }
+        None => {
+            HttpResponse::Found().header(http::header::LOCATION, "/").finish()
+        }
     }
 }

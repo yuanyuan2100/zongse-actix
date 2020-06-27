@@ -11,7 +11,7 @@ use std::{env, ops::Deref};
 pub fn create_db_pool() -> Pool<ConnectionManager<PgConnection>> {
     dotenv().ok();
 
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
     let manager = ConnectionManager::<PgConnection>::new(database_url);
     Pool::new(manager).expect("Failed to create pool.")
 }
@@ -35,8 +35,8 @@ impl FromRequest for DB {
 
     fn from_request(_req: &HttpRequest, _payload: &mut dev::Payload) -> Self::Future {
         match DB_POOL.get() {
-            Ok(conn) => ok(DB(conn)),
-            Err(_e) => err(ErrorBadRequest("no luck")),
+            Ok(db) => ok(DB(db)),
+            Err(_e) => err(ErrorBadRequest("no luck.")),
         }
     }
 }
