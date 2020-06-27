@@ -16,7 +16,7 @@ use chrono::Duration;
 use std::env;
 
 use crate::admin::admin_login::*;
-use crate::admin::new_post::*;
+use crate::admin::*;
 use crate::utils::{connections::*, url_converter::url_converter};
 use crate::model::{model_post::*, model_comment::*};
 
@@ -96,12 +96,11 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .wrap(NormalizePath {})
             .configure(router::routes)
+            .configure(admin::routes)
             .service(load_post)
             .service(get_admin_login_page)
             .service(admin_login)
             .service(get_admin_panel_page)
-            .service(get_new_post_inputpage)
-            .service(create_new_post)
             .service(Files::new("/", "statics/"))
     })
     .bind("127.0.0.1:8000")?
