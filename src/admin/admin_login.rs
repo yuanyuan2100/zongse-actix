@@ -2,14 +2,32 @@ use actix_web::{get, post, web, http, HttpResponse};
 use actix_identity::Identity;
 use serde::{Deserialize, Serialize};
 use tera::Context;
+use diesel::prelude::*;
 
 use crate::utils::connections::*;
 use crate::model::model_user::*;
+use crate::schema::*;
 
 #[derive(Serialize, Deserialize)]
 pub struct AdminLoginForm {
     pub username: String,
     pub password: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ChangePasswordForm {
+    pub username: String,
+    pub old_password: String,
+    pub new_password_1: String,
+    pub new_password_2: String,
+}
+
+#[derive(Serialize, Deserialize, AsChangeset)]
+#[table_name="users"]
+pub struct UpdateUserForm<'a> {
+    pub id: i32,
+    pub username: &'a str,
+    pub password: &'a str,
 }
 
 #[get("admin/admin_login")]
@@ -62,4 +80,59 @@ pub async fn get_admin_panel_page(tmpl: web::Data<tera::Tera>, id: Identity) -> 
             HttpResponse::Found().header(http::header::LOCATION, "/").finish()
         }
     }
+}
+
+#[get("admin/change_password")]
+pub fn get_change_password_page(tmpl: web::Data<tera::Tera>, id: Identity) -> HttpResponse {
+    
+    match id.identity() {
+        Some(_) => {
+            let s = tmpl.render("admin/change_password.html", &Context::new()).unwrap();
+    
+            HttpResponse::Ok().content_type("text/html").body(s)
+        }
+        None => {
+            HttpResponse::Found().header(http::header::LOCATION, "/").finish()
+        }
+    }   
+}
+
+
+#[post("/submit")]
+pub fn change_password(
+    form: web::Form<ChangePasswordForm>,
+    db: DB,
+) -> HttpResponse {
+
+    let fetched_users = User::find_by_username(&form.username, &db);
+
+        match fetched_users {
+            Ok(login_user) => {
+                if login_user.authenticated(&form.old_password) {
+              
+                    if form.new_password_1 == form.new_password_2 {
+
+                        let hashed_password = User::password_generate(&form.new_password_1);
+
+                        let updated_user = UpdateUserForm {
+                            id: login_user.id,
+                            username: &form.username,
+                            password: &hashed_password,
+                        };
+                                
+                        diesel::update(users::table.find(login_user.id))
+                        .set(&updated_user)
+                        .get_result::<User>(&*db)
+                        .expect("Error updating user"); 
+
+                        HttpResponse::Found().header(http::header::LOCATION, "/").finish()
+                } else {
+                    HttpResponse::Found().header(http::header::LOCATION, "/admin/change_password").finish()
+                }
+                } else {
+                    HttpResponse::Found().header(http::header::LOCATION, "/admin/change_password").finish()
+                }
+            }
+            Err(_) => HttpResponse::Found().header(http::header::LOCATION, "/admin/change_password").finish()
+        }
 }

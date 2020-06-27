@@ -3,12 +3,16 @@ use actix_web::web;
 pub mod admin_login;
 pub mod auth;
 // pub mod change_password;
-// pub mod admin_panel;
 pub mod post;
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
     
-    cfg.service(post::get_new_post_inputpage)
+    cfg.service(admin_login::get_admin_login_page)
+        .service(admin_login::admin_login)
+        .service(admin_login::get_admin_panel_page)
+        .service(admin_login::get_change_password_page)
+        .service(admin_login::change_password)
+        .service(post::get_new_post_inputpage)
         .service(post::create_new_post)
         .service(post::get_edit_post_page)
         .service(post::edit_post)

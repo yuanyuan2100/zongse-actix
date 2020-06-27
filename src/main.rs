@@ -15,8 +15,6 @@ use chrono::Duration;
 
 use std::env;
 
-use crate::admin::admin_login::*;
-use crate::admin::*;
 use crate::utils::{connections::*, url_converter::url_converter};
 use crate::model::{model_post::*, model_comment::*};
 
@@ -82,7 +80,7 @@ async fn main() -> std::io::Result<()> {
     let private_key = rand::thread_rng().gen::<[u8; 32]>();
 
     HttpServer::new(move || {
-        let tera = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*")).unwrap();
+        let tera = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*.html")).unwrap();
             
         App::new()
             .data(tera)
@@ -98,9 +96,6 @@ async fn main() -> std::io::Result<()> {
             .configure(router::routes)
             .configure(admin::routes)
             .service(load_post)
-            .service(get_admin_login_page)
-            .service(admin_login)
-            .service(get_admin_panel_page)
             .service(Files::new("/", "statics/"))
     })
     .bind("127.0.0.1:8000")?

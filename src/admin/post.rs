@@ -107,6 +107,35 @@ pub fn create_new_post(
     }
 }
 
+#[get("/{post_url}/admin/edit_post")]
+pub fn get_edit_post_page(
+    tmpl: web::Data<tera::Tera>, 
+    id: Identity, 
+    post_url: web::Path<String>, 
+    db: DB
+) -> HttpResponse {
+
+    match id.identity() {
+        Some(_) => {
+
+            println!("{:?}", &post_url);
+            
+            let mut context = Context::new();
+
+            let post = Post::find_by_url(&post_url, &db).unwrap();
+
+            context.insert("post", &post);
+            context.insert("post_url", &post.id_url);
+
+            let s = tmpl.render("admin/edit_post.html", &context).unwrap();
+    
+            HttpResponse::Ok().content_type("text/html").body(s)
+        }
+        None => {
+            HttpResponse::Found().header(http::header::LOCATION, "/").finish()
+        }
+    }            
+}
 
 #[post("/{post_url}/edit_post")]
 pub fn edit_post(
@@ -143,36 +172,6 @@ pub fn edit_post(
             HttpResponse::Found().header(http::header::LOCATION, format!("/post/{}", &url)).finish()
         }
 
-        None => {
-            HttpResponse::Found().header(http::header::LOCATION, "/").finish()
-        }
-    }            
-}
-
-#[get("/{post_url}/admin/edit_post")]
-pub fn get_edit_post_page(
-    tmpl: web::Data<tera::Tera>, 
-    id: Identity, 
-    post_url: web::Path<String>, 
-    db: DB
-) -> HttpResponse {
-
-    match id.identity() {
-        Some(_) => {
-
-            println!("{:?}", &post_url);
-            
-            let mut context = Context::new();
-
-            let post = Post::find_by_url(&post_url, &db).unwrap();
-
-            context.insert("post", &post);
-            context.insert("post_url", &post.id_url);
-
-            let s = tmpl.render("admin/edit_post.html", &context).unwrap();
-    
-            HttpResponse::Ok().content_type("text/html").body(s)
-        }
         None => {
             HttpResponse::Found().header(http::header::LOCATION, "/").finish()
         }
