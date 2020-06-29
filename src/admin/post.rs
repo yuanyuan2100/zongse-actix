@@ -55,21 +55,6 @@ pub struct DeletePostForm {
     pub published: bool,
 }
 
-#[get("admin/new_post")]
-pub fn get_new_post_inputpage(tmpl: web::Data<tera::Tera>, id: Identity) -> HttpResponse {
-    
-    match id.identity() {
-        Some(_) => {
-            let s = tmpl.render("admin/new_post.html", &Context::new()).unwrap();
-    
-            HttpResponse::Ok().content_type("text/html").body(s)
-        }
-        None => {
-            HttpResponse::Found().header(http::header::LOCATION, "/").finish()
-        }
-    }
-}
-
 #[post("/create")]
 pub fn create_new_post(
     form: web::Form<CreatePostForm>,

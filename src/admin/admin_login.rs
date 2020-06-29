@@ -31,11 +31,23 @@ pub struct UpdateUserForm<'a> {
 }
 
 #[get("admin/admin_login")]
-pub async fn get_admin_login_page(tmpl: web::Data<tera::Tera>) -> HttpResponse {
+pub async fn get_admin_login_page(
+    tmpl: web::Data<tera::Tera>,
+    id: Identity,
+) -> HttpResponse {
 
-    let s = tmpl.render("admin/admin_login.html", &Context::new()).unwrap();
-    
-    HttpResponse::Ok().content_type("text/html").body(s)
+    match id.identity() {
+        Some(_) => {
+            let s = tmpl.render("admin/admin_panel.html", &Context::new()).unwrap();
+            
+            HttpResponse::Ok().content_type("text/html").body(s)
+        }
+        None => {
+            let s = tmpl.render("admin/admin_login.html", &Context::new()).unwrap();
+            
+            HttpResponse::Ok().content_type("text/html").body(s)
+        }
+    }
 }
 
 #[post("admin/login")]
@@ -67,36 +79,26 @@ pub async fn admin_login(
     }
 }
 
-#[get("admin/admin_panel")]
-pub async fn get_admin_panel_page(tmpl: web::Data<tera::Tera>, id: Identity) -> HttpResponse {
+#[get("admin/{admin_url}")]
+pub async fn get_admin_pages(
+    tmpl: web::Data<tera::Tera>, 
+    id: Identity,
+    admin_url: web::Path<String>
+) -> HttpResponse {
 
     match id.identity() {
         Some(_) => {
-            let s = tmpl.render("admin/admin_panel.html", &Context::new()).unwrap();
+            let url = "admin/".to_owned() + &*admin_url + ".html";
+    
+            let s = tmpl.render(&url, &Context::new()).unwrap();
     
             HttpResponse::Ok().content_type("text/html").body(s)
         }
         None => {
-            HttpResponse::Found().header(http::header::LOCATION, "/").finish()
+            HttpResponse::Found().header(http::header::LOCATION, "/admin/admin_login").finish()
         }
     }
 }
-
-#[get("admin/change_password")]
-pub fn get_change_password_page(tmpl: web::Data<tera::Tera>, id: Identity) -> HttpResponse {
-    
-    match id.identity() {
-        Some(_) => {
-            let s = tmpl.render("admin/change_password.html", &Context::new()).unwrap();
-    
-            HttpResponse::Ok().content_type("text/html").body(s)
-        }
-        None => {
-            HttpResponse::Found().header(http::header::LOCATION, "/").finish()
-        }
-    }   
-}
-
 
 #[post("/submit")]
 pub fn change_password(
@@ -106,33 +108,33 @@ pub fn change_password(
 
     let fetched_users = User::find_by_username(&form.username, &db);
 
-        match fetched_users {
-            Ok(login_user) => {
-                if login_user.authenticated(&form.old_password) {
-              
-                    if form.new_password_1 == form.new_password_2 {
+    match fetched_users {
+        Ok(login_user) => {
+            if login_user.authenticated(&form.old_password) {
+            
+                if form.new_password_1 == form.new_password_2 {
 
-                        let hashed_password = User::password_generate(&form.new_password_1);
+                    let hashed_password = User::password_generate(&form.new_password_1);
 
-                        let updated_user = UpdateUserForm {
-                            id: login_user.id,
-                            username: &form.username,
-                            password: &hashed_password,
-                        };
-                                
-                        diesel::update(users::table.find(login_user.id))
-                        .set(&updated_user)
-                        .get_result::<User>(&*db)
-                        .expect("Error updating user"); 
+                    let updated_user = UpdateUserForm {
+                        id: login_user.id,
+                        username: &form.username,
+                        password: &hashed_password,
+                    };
+                            
+                    diesel::update(users::table.find(login_user.id))
+                    .set(&updated_user)
+                    .get_result::<User>(&*db)
+                    .expect("Error updating user"); 
 
-                        HttpResponse::Found().header(http::header::LOCATION, "/").finish()
+                    HttpResponse::Found().header(http::header::LOCATION, "/").finish()
                 } else {
-                    HttpResponse::Found().header(http::header::LOCATION, "/admin/change_password").finish()
+                HttpResponse::Found().header(http::header::LOCATION, "/admin/change_password").finish()
                 }
-                } else {
-                    HttpResponse::Found().header(http::header::LOCATION, "/admin/change_password").finish()
-                }
+            } else {
+                HttpResponse::Found().header(http::header::LOCATION, "/admin/change_password").finish()
             }
-            Err(_) => HttpResponse::Found().header(http::header::LOCATION, "/admin/change_password").finish()
         }
+        Err(_) => HttpResponse::Found().header(http::header::LOCATION, "/admin/change_password").finish()
+    }
 }
