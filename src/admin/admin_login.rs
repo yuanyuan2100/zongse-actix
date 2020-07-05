@@ -50,6 +50,27 @@ pub async fn get_admin_login_page(
     }
 }
 
+#[get("admin/{admin_url}")]
+pub async fn get_admin_pages(
+    tmpl: web::Data<tera::Tera>, 
+    id: Identity,
+    admin_url: web::Path<String>
+) -> HttpResponse {
+
+    match id.identity() {
+        Some(_) => {
+            let url = "admin/".to_owned() + &*admin_url + ".html";
+    
+            let s = tmpl.render(&url, &Context::new()).unwrap();
+    
+            HttpResponse::Ok().content_type("text/html").body(s)
+        }
+        None => {
+            HttpResponse::Found().header(http::header::LOCATION, "/admin/admin_login").finish()
+        }
+    }
+}
+
 #[post("admin/login")]
 pub async fn admin_login(
     form: web::Form<AdminLoginForm>,
@@ -76,27 +97,6 @@ pub async fn admin_login(
             }
         }
         Err(_) => Err(HttpResponse::Found().header(http::header::LOCATION, "admin/admin_login").finish()).unwrap()
-    }
-}
-
-#[get("admin/{admin_url}")]
-pub async fn get_admin_pages(
-    tmpl: web::Data<tera::Tera>, 
-    id: Identity,
-    admin_url: web::Path<String>
-) -> HttpResponse {
-
-    match id.identity() {
-        Some(_) => {
-            let url = "admin/".to_owned() + &*admin_url + ".html";
-    
-            let s = tmpl.render(&url, &Context::new()).unwrap();
-    
-            HttpResponse::Ok().content_type("text/html").body(s)
-        }
-        None => {
-            HttpResponse::Found().header(http::header::LOCATION, "/admin/admin_login").finish()
-        }
     }
 }
 

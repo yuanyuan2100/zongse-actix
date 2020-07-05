@@ -5,11 +5,13 @@
 
 use actix_files::Files;
 use actix_web::{middleware, App, HttpServer};
-use actix_web::{get, web, middleware::NormalizePath, HttpResponse};
-use actix_http::cookie::SameSite;
+use actix_web::{get, post, web, http, middleware::NormalizePath, HttpResponse};
+use actix_http::cookie::{Cookie, SameSite};
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_identity::Identity;
+
 use tera::{Tera, Context};
+use serde_derive::{Serialize, Deserialize};
 use rand::Rng;
 use chrono::Duration;
 
@@ -42,11 +44,34 @@ pub fn posts_and_comments(post_url: &str, db: &DB) -> Context {
     context    
 }
 
+#[derive(Queryable, Serialize, Deserialize, Debug)]
+pub struct Guest {
+    pub guestname: String,
+}
+
+#[post("post/{post_url}/guest_signin")]
+pub fn guest_login(
+    post_url: web::Path<String>,
+    guest: web::Json<Guest>,
+) -> HttpResponse {
+
+    let guest_name = &guest.guestname;
+
+    let guest_cookie = Cookie::build("guest", guest_name.to_string())
+                            .path("/")
+                            .secure(false)
+                            .finish();
+
+    HttpResponse::Found().header(http::header::LOCATION, format!("/post/{}", &post_url))
+                            .cookie(guest_cookie)            
+                            .finish()
+}
+
 #[get("post/{post_url}")]
 async fn load_post(
     tmpl: web::Data<tera::Tera>, 
     post_url: web::Path<String>, 
-    id: Identity, 
+    id: Identity,
     db: DB
 ) -> HttpResponse {
 
@@ -56,8 +81,8 @@ async fn load_post(
 
     if id.identity().is_some() {
         println!("Administrator");
-        context.insert("display_signin", &"block");   
-        context.insert("display_comment", &"block");
+        context.insert("display_signin", &"block");
+        context.insert("display_comment", &"block");   
         context.insert("display_delete_post", &"block");
     } else {
         println!("Anonymous");
@@ -66,10 +91,15 @@ async fn load_post(
         context.insert("display_delete_post", &"none");
     }
 
+    // match guest_name {
+    //     context.insert("display_comment", &"block");
+    // } else {
+    //     context.insert("display_comment", &"none");
+    // }
+
     let s = tmpl.render("post.html", &context).unwrap();
    
     HttpResponse::Ok().content_type("text/html").body(s)
-
 }
 
 #[actix_rt::main]
@@ -77,7 +107,7 @@ async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "actix_web=info");
     env_logger::init();
 
-    let private_key = rand::thread_rng().gen::<[u8; 32]>();
+    let auth_key = rand::thread_rng().gen::<[u8; 32]>();
 
     HttpServer::new(move || {
         let tera = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*.html")).unwrap();
@@ -85,7 +115,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .data(tera)
             .wrap(IdentityService::new(
-                CookieIdentityPolicy::new(&private_key)
+                CookieIdentityPolicy::new(&auth_key)
                     .name("auth")
                     .max_age_time(Duration::days(7))
                     .same_site(SameSite::Strict)
@@ -96,6 +126,7 @@ async fn main() -> std::io::Result<()> {
             .configure(router::routes)
             .configure(admin::routes)
             .service(load_post)
+            .service(guest_login)
             .service(Files::new("/", "statics/"))
     })
     .bind("127.0.0.1:8000")?

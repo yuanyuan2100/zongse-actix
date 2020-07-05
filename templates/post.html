@@ -27,7 +27,7 @@
         auth2.attachClickHandler(element, {},
             function(googleUser) {
               var xhr = new XMLHttpRequest();
-              var url = "/{{post_url}}/guest_signin";
+              var url = "{{post_url}}/guest_signin";
               xhr.open("POST", url, true);
               xhr.setRequestHeader("Content-Type", "application/json");
               document.getElementById('name').innerText = "Signed in: " +
