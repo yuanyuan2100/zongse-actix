@@ -5,7 +5,7 @@
 
 use actix_files::Files;
 use actix_web::{middleware, App, HttpServer};
-use actix_web::{get, post, web, http, middleware::NormalizePath, HttpResponse};
+use actix_web::{get, post, web, http, middleware::NormalizePath, HttpMessage, HttpResponse, HttpRequest};
 use actix_http::cookie::{Cookie, SameSite};
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_identity::Identity;
@@ -71,6 +71,7 @@ pub fn guest_login(
 async fn load_post(
     tmpl: web::Data<tera::Tera>, 
     post_url: web::Path<String>, 
+    rep: HttpRequest,
     id: Identity,
     db: DB
 ) -> HttpResponse {
@@ -81,21 +82,27 @@ async fn load_post(
 
     if id.identity().is_some() {
         println!("Administrator");
-        context.insert("display_signin", &"block");
-        context.insert("display_comment", &"block");   
+        context.insert("display_signin", &"block");  
         context.insert("display_delete_post", &"block");
     } else {
         println!("Anonymous");
         context.insert("display_signin", &"block"); 
-        context.insert("display_comment", &"none");
         context.insert("display_delete_post", &"none");
     }
 
-    // match guest_name {
-    //     context.insert("display_comment", &"block");
-    // } else {
-    //     context.insert("display_comment", &"none");
-    // }
+    let guest_cookie = rep.cookie("guest");
+
+    println!("{:?}", &guest_cookie);
+    match guest_cookie {
+        Some(_) => {
+            context.insert("display_signin", &"none"); 
+            context.insert("display_comment", &"block");
+        }
+        None => {
+            context.insert("display_signin", &"block");
+            context.insert("display_comment", &"none");
+        }
+    };
 
     let s = tmpl.render("post.html", &context).unwrap();
    
