@@ -116,22 +116,31 @@ pub fn create_comment(
 ) -> HttpResponse {
 
     let post = Post::find_by_url(&post_url, &db).unwrap();
-    let guestname = &rep.cookie("guest").unwrap().value().to_string();
+    let guestname_cookie = rep.cookie("guest");
 
-    let new_comment = NewComment {
-        body: &comment.body,
-        create_time: get_now(),
-        comment_by: &guestname,
-        comment_id: post.id,
-    };
+    match guestname_cookie {
+        Some(_) => {
+            let guestname = guestname_cookie.unwrap().value().to_string();
+            
+            let new_comment = NewComment {
+                body: &comment.body,
+                create_time: get_now(),
+                comment_by: &guestname,
+                comment_id: post.id,
+            };
+        
+            let email_subject = format!("{} commented on {}", &guestname, &post.title);
+            let _comment_notification = notification(&email_subject, &comment.body);
+        
+            diesel::insert_into(comments::table)
+                .values(&new_comment)
+                .get_result::<Comment>(&*db)
+                .expect("Error saving new comment");
+            
+            HttpResponse::Found().header(http::header::LOCATION, format!("/post/{}", &post_url)).finish()
+        }
+        None => HttpResponse::Found().header(http::header::LOCATION, format!("/post/{}", &post_url)).finish()
+    }
 
-    let email_subject = format!("{} commented on {}", &guestname, &post.title);
-    let _comment_notification = notification(&email_subject, &comment.body);
-
-    diesel::insert_into(comments::table)
-        .values(&new_comment)
-        .get_result::<Comment>(&*db)
-        .expect("Error saving new comment");
     
-    HttpResponse::Found().header(http::header::LOCATION, format!("/post/{}", &post_url)).finish()
 }
