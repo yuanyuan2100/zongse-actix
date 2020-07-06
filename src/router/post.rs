@@ -108,7 +108,7 @@ pub struct CommentInput {
 }
 
 #[post("/{post_url}/comment")]
-pub fn create_comment(
+async fn create_comment(
     post_url: web::Path<String>, 
     comment: web::Form<CommentInput>, 
     rep: HttpRequest,

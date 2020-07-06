@@ -11,8 +11,9 @@ use actix_identity::{CookieIdentityPolicy, IdentityService};
 use tera::Tera;
 use rand::Rng;
 use chrono::Duration;
-
 use std::env;
+
+use crate::utils::markdown::markdown_filter;
 
 pub mod router;
 pub mod utils;
@@ -28,7 +29,8 @@ async fn main() -> std::io::Result<()> {
     let auth_key = rand::thread_rng().gen::<[u8; 32]>();
 
     HttpServer::new(move || {
-        let tera = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*.html")).unwrap();
+        let mut tera = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*.html")).unwrap();
+        tera.register_filter("markdown_filter", markdown_filter);
             
         App::new()
             .data(tera)

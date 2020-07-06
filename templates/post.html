@@ -104,7 +104,7 @@
         <div class="container">
           <div class="row">
             <div class="col-lg-8 col-md-10 mx-auto">
-              <h5 style="font-family:Noto Sans SC">{{ post_text | safe }}</h5>
+              <h5 style="font-family:Noto Sans SC">{{ post_text | markdown_filter | safe }}</h5>
             </div>
           </div>
         </div>
