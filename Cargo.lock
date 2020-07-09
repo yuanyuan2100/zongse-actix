@@ -30,6 +30,8 @@ dependencies = [
  "futures",
  "http",
  "log",
+ "openssl",
+ "tokio-openssl",
  "trust-dns-proto",
  "trust-dns-resolver",
 ]
@@ -66,6 +68,7 @@ dependencies = [
  "actix-rt",
  "actix-service",
  "actix-threadpool",
+ "actix-tls",
  "actix-utils",
  "base64 0.11.0",
  "bitflags",
@@ -244,6 +247,8 @@ dependencies = [
  "either",
  "futures",
  "log",
+ "openssl",
+ "tokio-openssl",
 ]
 
 [[package]]
@@ -291,6 +296,7 @@ dependencies = [
  "log",
  "mime",
  "net2",
+ "openssl",
  "pin-project",
  "regex",
  "serde",
@@ -309,6 +315,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "actix-web-middleware-redirect-https"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca94e63640159cfd0ca704768c6267594e692c8c20c149bda877a268eff97ca8"
+dependencies = [
+ "actix-service",
+ "actix-web",
+ "futures",
 ]
 
 [[package]]
@@ -397,6 +414,7 @@ dependencies = [
  "futures-core",
  "log",
  "mime",
+ "openssl",
  "percent-encoding",
  "rand 0.7.3",
  "serde",
@@ -2348,6 +2366,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tokio-openssl"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c4b08c5f4208e699ede3df2520aca2e82401b2de33f45e96696a074480be594"
+dependencies = [
+ "openssl",
+ "tokio",
+]
+
+[[package]]
 name = "tokio-util"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2758,6 +2786,7 @@ dependencies = [
  "actix-rt",
  "actix-session",
  "actix-web",
+ "actix-web-middleware-redirect-https",
  "chrono",
  "diesel",
  "dotenv",
@@ -2768,6 +2797,7 @@ dependencies = [
  "lettre_email",
  "linkify",
  "nanoid",
+ "openssl",
  "pulldown-cmark",
  "r2d2",
  "r2d2-diesel",

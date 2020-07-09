@@ -7,10 +7,12 @@ use actix_web::{middleware, App, HttpServer};
 use actix_web::middleware::NormalizePath;
 use actix_http::cookie::SameSite;
 use actix_identity::{CookieIdentityPolicy, IdentityService};
+use actix_web_middleware_redirect_https::RedirectHTTPS;
 
 use tera::Tera;
 use rand::Rng;
 use chrono::Duration;
+use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 use std::env;
 
 use crate::utils::markdown::markdown_filter;
@@ -26,6 +28,12 @@ async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "actix_web=info");
     env_logger::init();
 
+    let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
+    builder
+        .set_private_key_file("key.pem", SslFiletype::PEM)
+        .unwrap();
+    builder.set_certificate_chain_file("cert.pem").unwrap();
+
     let auth_key = rand::thread_rng().gen::<[u8; 32]>();
 
     HttpServer::new(move || {
@@ -34,6 +42,7 @@ async fn main() -> std::io::Result<()> {
             
         App::new()
             .data(tera)
+            .wrap(RedirectHTTPS::with_replacements(&[(":8080".to_owned(), ":8443".to_owned())]))
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(&auth_key)
                     .name("auth")
@@ -45,9 +54,9 @@ async fn main() -> std::io::Result<()> {
             .wrap(NormalizePath {})
             .configure(router::routes)
             .configure(admin::routes)
-            .service(Files::new("/", "statics/"))
+            .service(Files::new("/", "statics"))
     })
-    .bind("127.0.0.1:8000")?
+    .bind_openssl("127.0.0.1:8443", builder)?
     .run()
     .await
 }

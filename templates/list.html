@@ -1,19 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
 <!-- Head -->
-<head>
- <title>Post List</title>
+ {% block title %}Post List{% endblock title %}
 
-  {% include "head" %}
+  <!-- Main Content -->
 
-</head>
-
-<!-- Body -->
-<body>
-
-  <!-- Navigation -->
-    {% include "navigation" %}
+   {% block content %}
 
   <!-- Page Header -->
   <header class="masthead" style="background-image: url('img/home-bg2.jpg')">
@@ -28,10 +20,7 @@
       </div>
     </div>
   </header>
-
-  <!-- Main Content -->
-
-   {% block content %}
+  
   <div class="container">
     <div class="row">
       <div class="col-lg-8 col-md-10 mx-auto">
@@ -53,12 +42,5 @@
 
   <hr>
   {% endblock content %}
-  
-  <!-- Footer -->
-    
-  {% include "footer" %}
- 
-
-</body>
 
 </html>

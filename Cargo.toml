@@ -8,12 +8,13 @@ edition = "2018"
 futures = "0.3.1"
 env_logger = "0.7"
 
-actix-web = { version = "2.0", default-features = false, features = ["secure-cookies"]}
+actix-web = { version = "2.0", default-features = false, features = ["openssl"] }
 actix-files = "0.2.2"
 actix-rt = "1.1.1"
 actix-http = "1.0.1"
 actix-session = "0.3.0"
 actix-identity = "0.2.1"
+actix-web-middleware-redirect-https = "1.0.0"
 
 rand = "0.7.3"
 r2d2 = "0.8.8"
@@ -31,6 +32,7 @@ lettre = "0.9.3"
 lettre_email = "0.9.3"
 linkify = "0.4"
 pulldown-cmark = { version = "0.7", default-features = false, features = ["simd"] }
+openssl = "0.10"
 
 [dependencies.diesel]
 version = "1.4.4"

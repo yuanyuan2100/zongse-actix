@@ -1,16 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
 <!-- Head -->
-<head>
- <title>About Me</title>
-
-  {% include "head" %}
-
-</head>
+ {% block title %}About Me{% endblock title %}
 
 <!-- Body -->
-<body>
+{% block content %}
 
   <!-- Page Header -->
   <header class="masthead" style="background-image: url('../img/about-bg.jpg')">
@@ -42,6 +36,6 @@ At this stage, this blog is my favourite toy.</h4>
 
   <hr>
 
-</body>
+  {% endblock content %}
 
 </html>
