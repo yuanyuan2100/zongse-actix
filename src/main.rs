@@ -42,7 +42,7 @@ async fn main() -> std::io::Result<()> {
             
         App::new()
             .data(tera)
-            .wrap(RedirectHTTPS::with_replacements(&[(":8080".to_owned(), ":8443".to_owned())]))
+            .wrap(RedirectHTTPS::with_replacements(&[(":8000".to_owned(), ":8443".to_owned())]))
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(&auth_key)
                     .name("auth")
@@ -56,7 +56,8 @@ async fn main() -> std::io::Result<()> {
             .configure(admin::routes)
             .service(Files::new("/", "statics"))
     })
-    .bind_openssl("127.0.0.1:8443", builder)?
+    .bind_openssl("0.0.0.0:8443", builder)?
+    .bind("0.0.0.0:8000")?
     .run()
     .await
 }
