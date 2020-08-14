@@ -35,6 +35,13 @@ impl Post {
             .first::<Post>(db.conn())
     }
 
+    pub fn find_by_tag(tag: Vec<String>, db: &DB) -> Result<Self, Error> {
+        posts::table
+            .filter(posts::published.eq(true))
+            .filter(posts::tags.contains(tag))
+            .first::<Post>(&**db)
+    }
+
     pub fn view_counter(&self, db: &DB) {
         let _view = diesel::update(self)
                 .set(view.eq(&self.view + 1))

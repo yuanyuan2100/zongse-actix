@@ -44,6 +44,26 @@ async fn post_list(tmpl: web::Data<tera::Tera>, db: DB) -> HttpResponse {
    HttpResponse::Ok().content_type("text/html").body(s)
 }
 
+#[get("/{tag}")]
+async fn list_by_tag(tmpl: web::Data<tera::Tera>, tag: web::Path<Vec<String>>, db: DB) -> HttpResponse {
+    use crate::schema::posts::dsl::*;
+
+    let mut context = Context::new();
+
+    let results: Vec<_> = posts
+                    .filter(published.eq(true))
+                    .filter(tags.contains(&*tag))
+                    .order(id.desc())
+                    .load::<Post>(&*db)
+                    .expect("Error loading posts");
+    
+    context.insert("posts", &results);
+    
+    let s = tmpl.render("list.html", &context).unwrap();
+   
+   HttpResponse::Ok().content_type("text/html").body(s)
+}
+
 #[get("/about")]
 async fn about(tmpl: web::Data<tera::Tera>) -> HttpResponse {
 
