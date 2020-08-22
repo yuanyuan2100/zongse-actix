@@ -1,4 +1,3 @@
 /target
-/cert.pem
-/key.pem
-/templates/post.html
+*.pem
+post.html
