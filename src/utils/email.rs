@@ -4,7 +4,6 @@ use lettre_email::EmailBuilder;
 use std::env;
 
 pub fn notification(title: &str, content: &str) {
-
     let smtp_address = "smtp.gmail.com";
     let email_sender = env::var("EMAIL_SENDER").expect("EMAIL SENDER must be set.");
     let email_password = env::var("EMAIL_PASSWORD").expect("EMAIL PASSWORD must be set.");

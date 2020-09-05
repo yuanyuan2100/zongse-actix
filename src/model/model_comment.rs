@@ -1,11 +1,11 @@
-use serde_derive::Serialize;
 use chrono::NaiveDateTime;
-use diesel::{prelude::*, pg::PgConnection, Insertable, Queryable};           
+use diesel::{pg::PgConnection, prelude::*, Insertable, Queryable};
+use serde_derive::Serialize;
 
 use crate::schema::*;
 
 #[derive(Queryable, Debug, Serialize, Insertable, AsChangeset, Clone)]
-#[table_name="comments"]
+#[table_name = "comments"]
 pub struct Comment {
     pub id: i32,
     pub body: String,

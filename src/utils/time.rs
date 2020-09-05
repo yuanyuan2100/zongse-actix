@@ -1,4 +1,4 @@
-use chrono::{NaiveDateTime, prelude::*};
+use chrono::{prelude::*, NaiveDateTime};
 use std::{thread, time};
 
 pub fn get_now() -> NaiveDateTime {
@@ -8,8 +8,7 @@ pub fn get_now() -> NaiveDateTime {
     NaiveDateTime::new(d, t)
 }
 
-pub fn wait(s :u64) {
-    
+pub fn wait(s: u64) {
     let duration = time::Duration::from_secs(s);
 
     thread::sleep(duration);

@@ -1,10 +1,10 @@
+use actix_web::error::ErrorBadRequest;
+use actix_web::{dev, Error, FromRequest, HttpRequest, Result};
 use diesel::pg::PgConnection;
+use dotenv::dotenv;
+use futures::future::{err, ok, Ready};
 use r2d2::{Pool, PooledConnection};
 use r2d2_diesel::ConnectionManager;
-use actix_web::{dev, Error, HttpRequest, FromRequest, Result};
-use actix_web::error::ErrorBadRequest;
-use dotenv::dotenv;
-use futures::future::{ok, err, Ready};
 
 use std::{env, ops::Deref};
 

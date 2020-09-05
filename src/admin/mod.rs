@@ -5,7 +5,6 @@ pub mod auth;
 pub mod post;
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
-    
     cfg.service(admin_login::get_admin_login_page)
         .service(admin_login::admin_login)
         .service(admin_login::get_admin_pages)

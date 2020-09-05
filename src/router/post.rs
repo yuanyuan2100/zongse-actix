@@ -1,18 +1,17 @@
-use actix_web::{get, post, web, http, HttpMessage, HttpResponse, HttpRequest};
 use actix_http::cookie::Cookie;
 use actix_identity::Identity;
+use actix_web::{get, http, post, web, HttpMessage, HttpRequest, HttpResponse};
 
-use tera::Context;
-use serde_derive::{Serialize, Deserialize};
-use diesel::prelude::*;
 use chrono::NaiveDateTime;
+use diesel::prelude::*;
+use serde_derive::{Deserialize, Serialize};
+use tera::Context;
 
-use crate::utils::{connections::*, email::notification, url_converter::url_converter, time::*};
-use crate::model::{model_post::*, model_comment::*};
+use crate::model::{model_comment::*, model_post::*};
 use crate::schema::*;
+use crate::utils::{connections::*, email::notification, time::*, url_converter::url_converter};
 
 pub fn posts_and_comments(post_url: &str, db: &DB) -> Context {
-
     let mut context = Context::new();
 
     let post = Post::find_by_url(&post_url, &*db).unwrap();
@@ -26,7 +25,7 @@ pub fn posts_and_comments(post_url: &str, db: &DB) -> Context {
     context.insert("post_text", &post_text);
     context.insert("comments", &comments);
     context.insert("post_url", &post_url);
-    context    
+    context
 }
 
 #[derive(Queryable, Serialize, Deserialize, Debug)]
@@ -35,43 +34,39 @@ pub struct Guest {
 }
 
 #[post("post/{post_url}/guest_signin")]
-pub fn guest_login(
-    post_url: web::Path<String>,
-    guest: web::Json<Guest>,
-) -> HttpResponse {
-
+pub fn guest_login(post_url: web::Path<String>, guest: web::Json<Guest>) -> HttpResponse {
     let guest_name = &guest.guestname;
 
     let guest_cookie = Cookie::build("guest", guest_name.to_string())
-                            .path("/")
-                            .secure(false)
-                            .finish();
+        .path("/")
+        .secure(false)
+        .finish();
 
-    HttpResponse::Found().header(http::header::LOCATION, format!("/post/{}", &post_url))
-                            .cookie(guest_cookie)            
-                            .finish()
+    HttpResponse::Found()
+        .header(http::header::LOCATION, format!("/post/{}", &post_url))
+        .cookie(guest_cookie)
+        .finish()
 }
 
 #[get("post/{post_url}")]
 async fn load_post(
-    tmpl: web::Data<tera::Tera>, 
-    post_url: web::Path<String>, 
+    tmpl: web::Data<tera::Tera>,
+    post_url: web::Path<String>,
     rep: HttpRequest,
     id: Identity,
-    db: DB
+    db: DB,
 ) -> HttpResponse {
-
     let mut context = Context::new();
 
     context.extend(posts_and_comments(&post_url, &db));
 
     if id.identity().is_some() {
         println!("Administrator");
-        context.insert("display_signin", &"block");  
+        context.insert("display_signin", &"block");
         context.insert("display_delete_post", &"block");
     } else {
         println!("Anonymous");
-        context.insert("display_signin", &"block"); 
+        context.insert("display_signin", &"block");
         context.insert("display_delete_post", &"none");
     }
 
@@ -79,7 +74,7 @@ async fn load_post(
 
     match guest_cookie {
         Some(_) => {
-            context.insert("display_signin", &"none"); 
+            context.insert("display_signin", &"none");
             context.insert("display_comment", &"block");
         }
         None => {
@@ -89,12 +84,12 @@ async fn load_post(
     };
 
     let s = tmpl.render("post.html", &context).unwrap();
-   
+
     HttpResponse::Ok().content_type("text/html").body(s)
 }
 
 #[derive(Insertable, Deserialize, Serialize, Debug)]
-#[table_name="comments"]
+#[table_name = "comments"]
 pub struct NewComment<'a> {
     pub body: &'a str,
     pub create_time: NaiveDateTime,
@@ -109,38 +104,39 @@ pub struct CommentInput {
 
 #[post("/{post_url}/comment")]
 async fn create_comment(
-    post_url: web::Path<String>, 
-    comment: web::Form<CommentInput>, 
+    post_url: web::Path<String>,
+    comment: web::Form<CommentInput>,
     rep: HttpRequest,
-    db: DB
+    db: DB,
 ) -> HttpResponse {
-
     let post = Post::find_by_url(&post_url, &db).unwrap();
     let guestname_cookie = rep.cookie("guest");
 
     match guestname_cookie {
         Some(_) => {
             let guestname = guestname_cookie.unwrap().value().to_string();
-            
+
             let new_comment = NewComment {
                 body: &comment.body,
                 create_time: get_now(),
                 comment_by: &guestname,
                 comment_id: post.id,
             };
-        
+
             let email_subject = format!("{} commented on {}", &guestname, &post.title);
             let _comment_notification = notification(&email_subject, &comment.body);
-        
+
             diesel::insert_into(comments::table)
                 .values(&new_comment)
                 .get_result::<Comment>(&*db)
                 .expect("Error saving new comment");
-            
-            HttpResponse::Found().header(http::header::LOCATION, format!("/post/{}", &post_url)).finish()
-        }
-        None => HttpResponse::Found().header(http::header::LOCATION, format!("/post/{}", &post_url)).finish()
-    }
 
-    
+            HttpResponse::Found()
+                .header(http::header::LOCATION, format!("/post/{}", &post_url))
+                .finish()
+        }
+        None => HttpResponse::Found()
+            .header(http::header::LOCATION, format!("/post/{}", &post_url))
+            .finish(),
+    }
 }

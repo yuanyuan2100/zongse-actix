@@ -1,13 +1,13 @@
-use serde_derive::{Serialize, Deserialize};
 use chrono::NaiveDateTime;
 use diesel::{prelude::*, result::Error, Insertable, Queryable};
+use serde_derive::{Deserialize, Serialize};
 
-use crate::schema::*;
 use crate::schema::posts::columns::view;
+use crate::schema::*;
 use crate::utils::connections::*;
 
 #[derive(Queryable, Identifiable, Debug, Serialize, Deserialize, Insertable, AsChangeset, Clone)]
-#[table_name="posts"]
+#[table_name = "posts"]
 pub struct Post {
     pub id: i32,
     pub id_url: String,
@@ -44,8 +44,8 @@ impl Post {
 
     pub fn view_counter(&self, db: &DB) {
         let _view = diesel::update(self)
-                .set(view.eq(&self.view + 1))
-                .get_result::<Post>(&**db)
-                .expect("View counter error.");
+            .set(view.eq(&self.view + 1))
+            .get_result::<Post>(&**db)
+            .expect("View counter error.");
     }
 }

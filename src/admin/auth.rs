@@ -17,7 +17,7 @@
 //     type Config = ();
 
 //     fn from_request(req: &HttpRequest, _payload: &mut dev::Payload) -> Self::Future {
-        
+
 //         req.identity().unwrap_or_else(|| "Anonymous".to_owned())
 //     }
 // }

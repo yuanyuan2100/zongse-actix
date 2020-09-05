@@ -1,10 +1,9 @@
-use std::collections::HashMap;
-use serde_json::value::to_value;
-use tera::{Result, Value};
 use pulldown_cmark::{html, Options, Parser};
+use serde_json::value::to_value;
+use std::collections::HashMap;
+use tera::{Result, Value};
 
 pub fn mark_down(input: &str) -> String {
-
     let parser = Parser::new_ext(input, Options::empty());
 
     // Write to String buffer.

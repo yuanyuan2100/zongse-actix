@@ -38,9 +38,6 @@ impl User {
     }
 
     pub fn find_by_user_id(id: i32, db: &DB) -> Result<Self, Error> {
-        users::table
-            .filter(users::id.eq(id))
-            .first::<User>(&**db)
+        users::table.filter(users::id.eq(id)).first::<User>(&**db)
     }
 }
-

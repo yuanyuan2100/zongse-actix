@@ -1,17 +1,17 @@
-use actix_web::{get, post, web, http, HttpResponse};
 use actix_identity::Identity;
-use tera::Context;
-use serde_derive::{Serialize, Deserialize};
+use actix_web::{get, http, post, web, HttpResponse};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use nanoid::nanoid;
+use serde_derive::{Deserialize, Serialize};
+use tera::Context;
 
 use crate::model::model_post::*;
-use crate::utils::{connections::*, time::*};
 use crate::schema::posts;
+use crate::utils::{connections::*, time::*};
 
 #[derive(Insertable, Deserialize, Serialize, Debug)]
-#[table_name="posts"]
+#[table_name = "posts"]
 pub struct NewPost<'a> {
     pub id_url: &'a str,
     pub title: &'a str,
@@ -31,7 +31,7 @@ pub struct CreatePostForm {
 }
 
 #[derive(Insertable, Deserialize, Serialize, Debug, AsChangeset)]
-#[table_name="posts"]
+#[table_name = "posts"]
 pub struct EditedPost<'a> {
     pub id_url: &'a str,
     pub title: &'a str,
@@ -49,22 +49,16 @@ pub struct EditPostForm {
 }
 
 #[derive(AsChangeset, Serialize, Deserialize, Debug)]
-#[table_name="posts"]
+#[table_name = "posts"]
 pub struct DeletePostForm {
     pub id: i32,
     pub published: bool,
 }
 
 #[post("/create")]
-pub fn create_new_post(
-    form: web::Form<CreatePostForm>,
-    id: Identity, 
-    db: DB
-) -> HttpResponse {
-
+pub fn create_new_post(form: web::Form<CreatePostForm>, id: Identity, db: DB) -> HttpResponse {
     match id.identity() {
         Some(_) => {
-
             let new_post = NewPost {
                 id_url: &nanoid!(),
                 title: &form.title,
@@ -84,27 +78,27 @@ pub fn create_new_post(
                 .get_result::<Post>(&*db)
                 .expect("Error saving new post");
 
-            HttpResponse::Found().header(http::header::LOCATION, "/").finish()
+            HttpResponse::Found()
+                .header(http::header::LOCATION, "/")
+                .finish()
         }
-        None => {
-            HttpResponse::Found().header(http::header::LOCATION, "/").finish()
-        }
+        None => HttpResponse::Found()
+            .header(http::header::LOCATION, "/")
+            .finish(),
     }
 }
 
 #[get("/{post_url}/admin/edit_post")]
 pub fn get_edit_post_page(
-    tmpl: web::Data<tera::Tera>, 
-    id: Identity, 
-    post_url: web::Path<String>, 
-    db: DB
+    tmpl: web::Data<tera::Tera>,
+    id: Identity,
+    post_url: web::Path<String>,
+    db: DB,
 ) -> HttpResponse {
-
     match id.identity() {
         Some(_) => {
-
             println!("{:?}", &post_url);
-            
+
             let mut context = Context::new();
 
             let post = Post::find_by_url(&post_url, &db).unwrap();
@@ -113,26 +107,24 @@ pub fn get_edit_post_page(
             context.insert("post_url", &post.id_url);
 
             let s = tmpl.render("admin/edit_post.html", &context).unwrap();
-    
+
             HttpResponse::Ok().content_type("text/html").body(s)
         }
-        None => {
-            HttpResponse::Found().header(http::header::LOCATION, "/").finish()
-        }
-    }            
+        None => HttpResponse::Found()
+            .header(http::header::LOCATION, "/")
+            .finish(),
+    }
 }
 
 #[post("/{post_url}/edit_post")]
 pub fn edit_post(
-    post_url: web::Path<String>, 
+    post_url: web::Path<String>,
     form: web::Form<EditPostForm>,
-    id: Identity,  
-    db: DB
+    id: Identity,
+    db: DB,
 ) -> HttpResponse {
-    
     match id.identity() {
         Some(_) => {
-
             let edited_post = EditedPost {
                 id_url: &post_url,
                 title: &form.title,
@@ -154,40 +146,38 @@ pub fn edit_post(
 
             let url = &post_url.to_string();
 
-            HttpResponse::Found().header(http::header::LOCATION, format!("/post/{}", &url)).finish()
+            HttpResponse::Found()
+                .header(http::header::LOCATION, format!("/post/{}", &url))
+                .finish()
         }
 
-        None => {
-            HttpResponse::Found().header(http::header::LOCATION, "/").finish()
-        }
-    }            
+        None => HttpResponse::Found()
+            .header(http::header::LOCATION, "/")
+            .finish(),
+    }
 }
 
 #[post("/{post_url}/delete_post")]
-pub fn delete_post(
-    post_url: web::Path<String>, 
-    id: Identity,
-    db: DB
-) -> HttpResponse {
-    
+pub fn delete_post(post_url: web::Path<String>, id: Identity, db: DB) -> HttpResponse {
     match id.identity() {
         Some(_) => {
-
             let post = Post::find_by_url(&post_url, &db).unwrap();
             let delete_post = DeletePostForm {
                 id: post.id,
                 published: false,
             };
-            
+
             diesel::update(posts::table.find(post.id))
                 .set(&delete_post)
                 .get_result::<Post>(&*db)
                 .expect("Error deleting this post.");
 
-            HttpResponse::Found().header(http::header::LOCATION, "/").finish()
+            HttpResponse::Found()
+                .header(http::header::LOCATION, "/")
+                .finish()
         }
-        None => {
-            HttpResponse::Found().header(http::header::LOCATION, "/").finish()
-        }
+        None => HttpResponse::Found()
+            .header(http::header::LOCATION, "/")
+            .finish(),
     }
 }

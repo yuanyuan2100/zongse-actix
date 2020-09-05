@@ -4,7 +4,6 @@ pub mod index;
 pub mod post;
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
-    
     cfg.service(index::index)
         .service(index::post_list)
         .service(index::list_by_tag)
