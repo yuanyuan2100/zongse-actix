@@ -97,7 +97,6 @@ pub fn get_edit_post_page(
 ) -> HttpResponse {
     match id.identity() {
         Some(_) => {
-            println!("{:?}", &post_url);
 
             let mut context = Context::new();
 

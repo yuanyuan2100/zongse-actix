@@ -3,6 +3,7 @@ use actix_web::web;
 pub mod admin_login;
 pub mod auth;
 pub mod post;
+pub mod file;
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
     cfg.service(admin_login::get_admin_login_page)
@@ -13,4 +14,5 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
         .service(post::get_edit_post_page)
         .service(post::edit_post)
         .service(post::delete_post);
+        // .service(web::post().to_async(file::upload_img));
 }
