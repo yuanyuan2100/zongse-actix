@@ -2,10 +2,10 @@ use std::io::Write;
 
 use actix_multipart::Multipart;
 use actix_identity::Identity;
-use actix_web::{web, http, Error, HttpResponse};
+use actix_web::{web, http, post, Error, HttpResponse};
 use futures::{StreamExt, TryStreamExt};
 
-
+#[post("/upload")]
 pub async fn upload_img(mut payload: Multipart, id: Identity) -> Result<HttpResponse, Error> {
     match id.identity() {
         Some(_) => {

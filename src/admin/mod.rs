@@ -13,6 +13,6 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
         .service(post::create_new_post)
         .service(post::get_edit_post_page)
         .service(post::edit_post)
-        .service(post::delete_post);
-        // .service(web::post().to_async(file::upload_img));
+        .service(post::delete_post)
+        .service(file::upload_img);
 }

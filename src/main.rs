@@ -9,7 +9,7 @@ use actix_files::Files;
 use actix_http::cookie::SameSite;
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::middleware::NormalizePath;
-use actix_web::{middleware, web, App, HttpServer, HttpResponse};
+use actix_web::{middleware, App, HttpServer};
 use actix_web_middleware_redirect_https::RedirectHTTPS;
 
 use time::Duration;
@@ -19,7 +19,6 @@ use std::env;
 use tera::Tera;
 
 use crate::utils::markdown::markdown_filter;
-use crate::admin::file::*;
 
 pub mod admin;
 pub mod model;
