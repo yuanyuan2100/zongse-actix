@@ -68,7 +68,7 @@ async fn list_by_tag(
     HttpResponse::Ok().content_type("text/html").body(s)
 }
 
-#[get("/about")]
+#[get("/post/about")]
 async fn about(tmpl: web::Data<tera::Tera>) -> HttpResponse {
     let context = Context::new();
 

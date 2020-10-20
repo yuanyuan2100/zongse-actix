@@ -8,15 +8,17 @@ extern crate tera;
 use actix_files::Files;
 use actix_http::cookie::SameSite;
 use actix_identity::{CookieIdentityPolicy, IdentityService};
-use actix_web::middleware::NormalizePath;
 use actix_web::{middleware, App, HttpServer};
-use actix_web_middleware_redirect_https::RedirectHTTPS;
+// use actix_web_middleware_redirect_https::RedirectHTTPS;
+use actix_service::Service;
+use actix_web::middleware::normalize::TrailingSlash::Trim;
 
 use time::Duration;
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 use rand::Rng;
 use std::env;
 use tera::Tera;
+use futures::future::FutureExt;
 
 use crate::utils::markdown::markdown_filter;
 
@@ -40,8 +42,7 @@ async fn main() -> std::io::Result<()> {
     let auth_key = rand::thread_rng().gen::<[u8; 32]>();
 
     HttpServer::new(move || {
-        let mut tera =
-            Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*.html")).unwrap();
+        let mut tera = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*.html")).unwrap();
         tera.register_filter("markdown_filter", markdown_filter);
 
         App::new()
@@ -58,11 +59,17 @@ async fn main() -> std::io::Result<()> {
                     .secure(false),
             ))
             .wrap(middleware::Logger::default())
-            // .wrap(NormalizePath {})
+            .wrap(middleware::NormalizePath::new(Trim))
+            // .wrap_fn(|req, srv| {
+            //     println!("Hi from start. You requested: {}", req.path());
+            //     srv.call(req).map(|res| {
+            //         println!("Hi from response");
+            //         res
+            //     })
+            // })
             .configure(router::routes)
             .configure(admin::routes)
             .service(Files::new("/", "statics"))
-            // .service(web::resource("/").route(web::post().to(upload_img)))
     })
     .bind_openssl("0.0.0.0:8443", builder)?
     .bind("0.0.0.0:8000")?
