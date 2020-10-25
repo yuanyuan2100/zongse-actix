@@ -9,8 +9,6 @@ use actix_files::Files;
 use actix_http::cookie::SameSite;
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::{middleware, App, HttpServer};
-// use actix_web_middleware_redirect_https::RedirectHTTPS;
-use actix_service::Service;
 use actix_web::middleware::normalize::TrailingSlash::Trim;
 
 use time::Duration;
@@ -18,9 +16,9 @@ use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 use rand::Rng;
 use std::env;
 use tera::Tera;
-use futures::future::FutureExt;
 
 use crate::utils::markdown::markdown_filter;
+use crate::utils::middleware::RedirectHTTPS;
 
 pub mod admin;
 pub mod model;
@@ -47,10 +45,6 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .data(tera)
-            // .wrap(RedirectHTTPS::with_replacements(&[(
-            //     ":8000".to_owned(),
-            //     ":8443".to_owned(),
-            // )]))
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(&auth_key)
                     .name("auth")
@@ -60,19 +54,13 @@ async fn main() -> std::io::Result<()> {
             ))
             .wrap(middleware::Logger::default())
             .wrap(middleware::NormalizePath::new(Trim))
-            // .wrap_fn(|req, srv| {
-            //     println!("Hi from start. You requested: {}", req.path());
-            //     srv.call(req).map(|res| {
-            //         println!("Hi from response");
-            //         res
-            //     })
-            // })
+            .wrap(RedirectHTTPS::default())
             .configure(router::routes)
             .configure(admin::routes)
             .service(Files::new("/", "statics"))
     })
-    .bind_openssl("0.0.0.0:8443", builder)?
-    .bind("0.0.0.0:8000")?
+    .bind_openssl("0.0.0.0:443", builder)?
+    .bind("0.0.0.0:80")?
     .run()
     .await
 }
