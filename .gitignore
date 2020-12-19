@@ -1,3 +1,4 @@
 /target
 *.pem
 .DS_store
+Cargo.lock
