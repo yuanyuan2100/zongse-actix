@@ -69,7 +69,7 @@ pub fn create_new_post(form: web::Form<CreatePostForm>, id: Identity, db: DB) ->
                 tags: if form.tags.is_empty() {
                     vec![]
                 } else {
-                    form.tags.split("/").map(String::from).collect()
+                    form.tags.split('/').map(String::from).collect()
                 },
             };
 
@@ -132,7 +132,7 @@ pub fn edit_post(
                 tags: if form.tags.is_empty() {
                     vec![]
                 } else {
-                    form.tags.split("/").map(String::from).collect()
+                    form.tags.split('/').map(String::from).collect()
                 },
             };
 

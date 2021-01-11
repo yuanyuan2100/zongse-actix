@@ -13,16 +13,16 @@ pub fn link_finder_str(input: &str) -> Vec<String> {
 }
 
 // add html tags to link
-pub fn link_html_converter(links: &Vec<String>) -> Vec<String> {
+pub fn link_html_converter(links: &[String]) -> Vec<String> {
     let mut link_html = Vec::new();
 
     for link in links.iter() {
         if link.ends_with(".jpg") || link.ends_with(".png") {
-            link_html.push("<img src=".to_owned() + link + &" width='800'> ");
+            link_html.push("<img src=".to_owned() + link + " width='800'> ");
         } else if link.ends_with(".gif") {
-            link_html.push("<img src=".to_owned() + link + &"> ");
+            link_html.push("<img src=".to_owned() + link + "> ");
         } else {
-            link_html.push("<a target='_blank' href='".to_owned() + link + &"'>" + link + &"</a> ");
+            link_html.push("<a target='_blank' href='".to_owned() + link + "'>" + link + "</a> ");
         }
     }
     link_html
@@ -32,10 +32,10 @@ pub fn link_html_converter(links: &Vec<String>) -> Vec<String> {
 pub fn url_in_text(input: &str, mut links_str: Vec<String>, mut links_html: Vec<String>) -> String {
     let text_workingon = &input.to_string();
 
-    if links_str.len() == 0 {
+    if links_str.is_empty() {
         text_workingon.to_string()
     } else {
-        let text_workingon = &input.replace(&links_str[0], &links_html[0]).to_string();
+        let text_workingon = &input.replace(&links_str[0], &links_html[0]);
 
         links_str.remove(0);
         links_html.remove(0);
