@@ -16,6 +16,6 @@ At first, I wrote a Rocket version, then I found it was not stable enough and wi
 
    Almost all of those Rust blog projects I referred to do not have a comment function. Since this blog was designed as a playground for me and my friends, I've added the comment feature for them.
 
-* Email Alert
+* Email Notification
 
-   I will get an email alert when someone comments on my post so I don't need to check them manually every day. Especially when someone commented on a very old post. 
+   I will get an email when someone comments on my post so I don't need to check them manually every day. Especially when someone commented on a very old post. 
