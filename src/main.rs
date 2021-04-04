@@ -32,9 +32,7 @@ async fn main() -> std::io::Result<()> {
     env_logger::init();
 
     let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
-    builder
-        .set_private_key_file("key.pem", SslFiletype::PEM)
-        .unwrap();
+    builder.set_private_key_file("key.pem", SslFiletype::PEM).unwrap();
     builder.set_certificate_chain_file("cert.pem").unwrap();
 
     let auth_key = rand::thread_rng().gen::<[u8; 32]>();

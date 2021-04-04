@@ -1,4 +1,5 @@
 /target
+/.vscode
 key.pem
 cert.pem
 .DS_store

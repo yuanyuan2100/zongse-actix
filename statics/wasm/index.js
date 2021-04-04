@@ -1,5 +1,5 @@
-import init from './pkg/wasm_game_of_life.js';
-import * as wasm from './pkg/wasm_game_of_life.js';
+import init from './pkg/wasm.js';
+import * as wasm from './pkg/wasm.js';
 
 async function run(){
     await init();
